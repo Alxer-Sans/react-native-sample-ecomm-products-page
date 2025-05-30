@@ -1,3 +1,4 @@
+//this part is underdevelopment
 import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import  useGetProductId  from '../api/hooks/useGetProductId';
