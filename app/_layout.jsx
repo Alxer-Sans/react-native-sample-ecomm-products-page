@@ -1,47 +1,25 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { Drawer } from 'expo-router/drawer';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Pressable, View, StyleSheet, Text, Image, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import NetInfo from "@react-native-community/netinfo";
-import { createDrawerNavigator, DrawerItemList } from "@react-navigation/drawer";
 import { onlineManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-
-import { default as BestSellersScreen, default as ProductsScreen, default as SalesScreen, default as SettingsScreen } from "../app/index";
-
-onlineManager.setEventListener((setOnline) => {
-  return NetInfo.addEventListener((state) => {
-    setOnline(!!state.isConnected);
-  });
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      networkMode: 'online',
-    },
-  },
-});
-
-const Drawer = createDrawerNavigator();
+import { DrawerItemList } from '@react-navigation/drawer';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function CustomDrawerContent(props) {
-  
   const netInfo = NetInfo.useNetInfo();
 
   return (
     <View style={styles.drawerContentContainer}>
       <View style={styles.logoContainer}>
         <Image 
-          source={require("../assets/images/TeamLogo.jpg-modified.png")} 
+          source={require("../assets/images/TeamLogo.jpg-modified.png")}
           style={styles.logo} 
         />
         <Text style={styles.logoText}>DEVSIX Apparel</Text>
-        <View style={[{flexDirection: "row", alignItems: "center", marginTop: "8"}]}>
-          <View style={[
-              {width: 10, height: 10, borderRadius: 5, marginRight: 6},
-              {backgroundColor: netInfo.isConnected ? "#4caf50" : "#f44336"},
-              ]}>
+        <View style={[{flexDirection: "row", alignItems: "center", marginTop: "8"}]} >
+          <View style={[{width: 10, height: 10, borderRadius: 5, marginRight: 6}, {backgroundColor: netInfo.isConnected ? "#4caf50" : "#f44336"}]} >
           </View>
           <Text style={[{fontSize: 12, color: '#000'}]}>{netInfo.isConnected ? "Online" : "Offline"}</Text>
         </View>
@@ -54,21 +32,11 @@ function CustomDrawerContent(props) {
 }
 
 const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: '#fff',
-  },
-  screenText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   drawerContentContainer: {
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 20,
-  }, 
+  },
   drawerItemListContainer: {
     flex: 1,
     marginTop: 10,
@@ -91,30 +59,40 @@ const styles = StyleSheet.create({
   },
 });
 
-function renderHeaderButtons() {
+export function renderHeaderButtons() {
+  const router = useRouter();
   return (
     <View style={{ flexDirection: 'row', marginRight: 15 }}>
-      <Pressable
-        onPress={() => console.log('Cart pressed')}
-        style={({ pressed }) => [{ marginLeft: 15, opacity: pressed ? 0.5 : 1 }]}
-      >
+      <Pressable onPress={() => router.push('/cart')} style={{ marginRight: 15 }}>
         <MaterialIcons name="shopping-cart" size={24} color="black" />
       </Pressable>
-      <Pressable
-        onPress={() => console.log('Profile pressed')}
-        style={({ pressed }) => [{ marginLeft: 15, opacity: pressed ? 0.5 : 1 }]}
-      >
-        <MaterialIcons name="account-circle" size={24} color="black" />
+      <Pressable onPress={() => router.push('/profile')}>
+        <MaterialIcons name="person" size={24} color="black" />
       </Pressable>
     </View>
   );
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      networkMode: 'online',
+    },
+  },
+});
+
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected);
+  });
+});
+
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <Drawer.Navigator 
+        <Drawer
           drawerContent={(props) => <CustomDrawerContent {...props} />}
           screenOptions={{
             headerStyle: {
@@ -123,49 +101,31 @@ export default function RootLayout() {
             headerTintColor: '#000',
             drawerActiveTintColor: '#000',
             drawerInactiveTintColor: '#666',
+            headerRight: renderHeaderButtons,
+            headerShown: true,
           }}
         >
-          <Drawer.Screen 
-            name="products"
-            component={ProductsScreen}
+          <Drawer.Screen
+            name="index"
             options={{
               drawerLabel: 'Products',
               title: '',
+              drawerIcon: ({ color }) => (
+                <MaterialIcons name="shopping-bag" size={24} color={color} />
+              ),
               headerRight: renderHeaderButtons,
-              drawerIcon: ({ color }) => <MaterialIcons name="shopping-bag" size={24} color={color} />
             }}
           />
-          <Drawer.Screen 
-            name="BestSellers" 
-            component={BestSellersScreen} 
+          <Drawer.Screen
+            name="productDetail"
             options={{
-              drawerLabel: 'Best Sellers',
+              drawerLabel: 'Product Detail',
               title: '',
+              drawerItemStyle: { display: 'none' },
               headerRight: renderHeaderButtons,
-              drawerIcon: ({ color }) => <MaterialIcons name="star" size={24} color={color} />
             }}
           />
-          <Drawer.Screen 
-            name="Sales" 
-            component={SalesScreen} 
-            options={{
-              drawerLabel: 'Sales',
-              title: '',
-              headerRight: renderHeaderButtons,
-              drawerIcon: ({ color }) => <MaterialIcons name="local-offer" size={24} color={color} />
-            }}
-          />
-          <Drawer.Screen 
-            name="Settings" 
-            component={SettingsScreen} 
-            options={{
-              drawerLabel: 'Settings',
-              title: '',
-              headerRight: renderHeaderButtons,
-              drawerIcon: ({ color }) => <MaterialIcons name="settings" size={24} color={color} />
-            }}
-          />
-        </Drawer.Navigator>
+        </Drawer>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );
